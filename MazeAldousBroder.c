@@ -5,11 +5,11 @@
 #include <time.h>
 
 
-#define N      4	// mesh size (always squared)
+#define N      5	// mesh size (always squared)
 
 enum Side { TOP = 0, RIGHT = 1, BOTTOM = 2, LEFT = 3};
 
-void ResetMaze(bool Maze[N][N], bool Visited[N][N])
+void ResetMaze(bool Maze[N][N], bool Visited[N][N], bool Solution[N][N])
 {
     int i, j;
 
@@ -19,40 +19,9 @@ void ResetMaze(bool Maze[N][N], bool Visited[N][N])
         {
             Maze[i][j] = false;
             Visited[i][j] = false;
+            Solution[i][j] = false;
         }
     }
-}
-
-void ShowMazeValues(bool Maze[N][N])
-{
-    // for testing purpouses only
-    int i, j;
-
-    for (i = 0; i < N; i++)
-    {
-        for (j = 0; j < N; j++)
-        {
-            printf(" %d ", Maze[i][j]);
-        }
-        printf("\n");
-    }
-
-}
-
-void ShowSolutionValues(bool Solution[N][N])
-{
-    // for testing purpouses only
-    int i, j;
-
-    for (i = 0; i < N; i++)
-    {
-        for (j = 0; j < N; j++)
-        {
-            printf(" %c ", Solution[i][j] ? '#' : '.');
-        }
-        printf("\n");
-    }
-
 }
 
 void ShowMaze(bool Maze[N][N]){
@@ -65,6 +34,12 @@ void ShowMaze(bool Maze[N][N]){
         for (j = 0; j < N; j++){
             // top (first line only)
             if (i == 0){
+            	if(j == 0){	
+                	printf("-");
+				}
+				if(j == (N - 1)){	
+                	printf("--");
+				}
                 printf("--");
             }
         }
@@ -72,21 +47,21 @@ void ShowMaze(bool Maze[N][N]){
         // FIM TOP
 
         // #### both sides ####
-        for (j = 0; j < N; j++){
+        for (j = 0; j <= N; j++){
 
             // LEFT for the first column only
             if (j == 0){
-                printf("%c", '|');
+                printf("%c %c", '|', Maze[i][j] ? '#' : ' ');
             }
 
             // RIGHT for the last column only
-            if (j == (N - 1)){
-                printf("%c", '|');
+            if (j == N){
+                printf(" %c", '|');
             }
 
-            if (j > 0 && j < (N - 1)){
+            if (j > 0 && j < N){
                 // check the walls between two intermediate columns
-                printf("%s", Maze[i][j] ? "#" : "  ");
+                printf(" %c", Maze[i][j] ? '#' : ' ');
             }
         }
         printf("\n");
@@ -95,6 +70,12 @@ void ShowMaze(bool Maze[N][N]){
         // #### BOTOM - last line only ####
         if (i == (N - 1)){
             for (j = 0; j < N; j++){
+            	if(j == 0){	
+                	printf("-");
+				}
+				if(j == (N - 1)){	
+                	printf("--");
+				}
                 printf("--");
             }
             printf("\n");
@@ -107,102 +88,65 @@ void ShowMazeDetails(bool Maze[N][N], bool Visited[N][N], int currCellLine, int 
 
     int i, j;
 
-    // for each line, we have to print 3 levels (top, botton and both sides of each cell)
     for (i = 0; i < N; i++){
 
         // ##### TOP #####
         for (j = 0; j < N; j++){
             // top (first line only)
             if (i == 0){
-                if ((Maze[i][j] & TOP) == TOP){
-                    printf("+---");
-                }else{
-                    printf("+   ");
-                }
-                if (j == (N - 1)) printf("+");
-            }
-
-            // top (second line on)
-            if (i > 0){
-                if ((Maze[i - 1][j] & BOTTOM) == BOTTOM || (Maze[i][j] & TOP) == TOP){
-                    printf("+---");
-                }else{
-                    //printf("+ = ");
-                    printf("+   ");
-                }
-                if (j == (N - 1)) printf("+");
+            	if(j == 0){	
+                	printf("-");
+				}
+				if(j == (N - 1)){	
+                	printf("--");
+				}
+                printf("--");
             }
         }
         printf("\n");
         // FIM TOP
 
         // #### both sides ####
-        for (j = 0; j < N; j++){
-
-            char L = ' ';
-            char R = ' ';
+        for (j = 0; j <= N; j++){
             char C = ' ';
-
+            
             // cell content
-            C = ' ';
-            if (!Visited[i][j]) C = '*';
-            if (i == currCellLine && j == currCellColumn) C = 'C';
+            if (Maze[i][j]) C = '#';
+            if (i == currCellLine && j == currCellColumn) C = 'O';
+            
 
-            // LEFT and RIGHT for the first column only
-            if (j == 0)
-            {
-                if ((Maze[i][j] & LEFT) == LEFT)  L = '|';
-                if ((Maze[i][j] & RIGHT) == RIGHT) R = '|';
-
-                printf("%c %c %c", L, C, R);
+            // LEFT for the first column only
+            if (j == 0){
+                printf("%c %c", '|', C);
             }
 
-            // LEFT and RIGHT for the last column only
-            L = 0; R = ' ';
-            if (j == (N - 1))
-            {
-                if ((Maze[i][j] & LEFT) == LEFT)  L = '|';
-                if ((Maze[i][j] & RIGHT) == RIGHT) R = '|';
-                if ((Maze[i][j - 1] & RIGHT) == RIGHT) L = 0;
-
-                printf("%c %c %c", L, C, R);
+            // RIGHT for the last column only
+            if (j == N){
+                printf(" %c", '|');
             }
 
-            // LEFT and RIGHT for the intermediate columns only
-            L = ' '; R = ' '; /*C = '*'; */
-            if (j > 0 && j < (N - 1))
-            {
+            if (j > 0 && j < N){
                 // check the walls between two intermediate columns
-                if ((Maze[i][j] & RIGHT) == RIGHT || (Maze[i][j + 1] & LEFT) == LEFT) L = '|';
-
-                printf(" %c %c", C, L);
-
+                printf(" %c", C);
             }
-            //printf("\n");
         }
         printf("\n");
         // fim both sides
 
         // #### BOTOM - last line only ####
-        if (i == (N - 1))
-        {
-            for (j = 0; j < N; j++)
-            {
-                if ((Maze[i][j] & BOTTOM) == BOTTOM)
-                {
-                    printf("+---");
-                }
-                else
-                {
-                    printf("+   ");
-                }
-                if (j == (N - 1)) printf("+");
+        if (i == (N - 1)){
+            for (j = 0; j < N; j++){
+            	if(j == 0){	
+                	printf("-");
+				}
+				if(j == (N - 1)){	
+                	printf("--");
+				}
+                printf("--");
             }
             printf("\n");
         }
-
     }
-
 }
 
 void ShowMazeSolution(bool Maze[N][N], bool Solution[N][N], bool ClearScreen){
@@ -217,33 +161,40 @@ void ShowMazeSolution(bool Maze[N][N], bool Solution[N][N], bool ClearScreen){
         // ##### TOP #####
         for (j = 0; j < N; j++){
             // top (first line only)
-            if (i == 0){
-                printf("--");
-            }
+	    	if(i == 0){
+	            if(j == 0){	
+	            	printf("-");
+				}
+				if(j == (N - 1)){	
+	            	printf("--");
+				}
+	            printf("--");
+	        }
         }
         printf("\n");
         // FIM TOP
 
         // #### both sides ####
-        for (j = 0; j < N; j++){
+        for (j = 0; j <= N; j++){
             char C = ' ';
 
             // cell content
             if (Solution[i][j]) C = 'O';
+            if (Maze[i][j]) C = '#';
 
             // LEFT for the first column only
             if (j == 0){
-                printf("%c", "|");
+                printf("%c %c", '|', C);
             }
 
             // RIGHT for the last column only
-            if (j == (N - 1)){
-                printf("%c", '|');
+            if (j == N){
+                printf(" %c", '|');
             }
 
             // intermediate columns only
-            if (j > 0 && j < (N - 1)){
-                printf("%c", C);
+            if (j > 0 && j < N){
+                printf(" %c", C);
             }
             //printf("\n");
         }
@@ -253,6 +204,12 @@ void ShowMazeSolution(bool Maze[N][N], bool Solution[N][N], bool ClearScreen){
         // #### BOTOM - last line only ####
         if (i == (N - 1)){
             for (j = 0; j < N; j++){
+            	if(j == 0){	
+                	printf("-");
+				}
+				if(j == (N - 1)){	
+                	printf("--");
+				}
                 printf("--");
             }
             printf("\n");
@@ -262,27 +219,30 @@ void ShowMazeSolution(bool Maze[N][N], bool Solution[N][N], bool ClearScreen){
 
 
 void CloseCell(bool Maze[N][N], int Line, int Column, bool Open, bool Guess){
-
-    if (Guess == TOP){
-        if (Line > 0){
-            Maze[Line - 1][Column] = Open;
-        }
-    }
-    if (Guess == BOTTOM){
-        if (Line < (N - 1)){
-            Maze[Line + 1][Column] = Open;
-        }
-    }
-    if (Guess == LEFT){
-        if (Column > 0){
-            Maze[Line][Column - 1] = Open;
-        }
-    }
-    if (Guess == RIGHT){
-        if (Column < (N - 1)){
-            Maze[Line][Column + 1] = Open;
-        }
-    }
+	
+	
+    if(!(Line == 0 && Column == 0) || !(Line == (N - 1) && Column == (N - 1))){
+		if (Guess == TOP){
+		    if (Line > 0){
+		        Maze[Line][Column] = Open;
+		    }
+		}
+		if (Guess == BOTTOM){
+		    if (Line < (N - 1)){
+		        Maze[Line][Column] = Open;
+		    }
+		}
+		if (Guess == LEFT){
+		    if (Column > 0){
+		        Maze[Line][Column] = Open;
+		    }
+		}
+		if (Guess == RIGHT){
+		    if (Column < (N - 1)){
+		        Maze[Line][Column] = Open;
+		    }
+		}
+	}
 }
 
 void PickupRandomCell(bool Maze[N][N], int* Line, int* Column)
@@ -301,14 +261,14 @@ bool PickupOpenOrClose(){
 }
 
 
-void AldousBroderMaze(bool Maze[N][N]){
+void AldousBroderMaze(bool Maze[N][N], bool Solution[N][N]){
     bool Visited[N][N];
     int unvisitedCells;
     int currentCellLine=-1, currentCellColumn=-1, neighCellLine=-1, neighCellColumn=-1;
     int guess=-1;
     int cont = 0;
 
-    ResetMaze(Maze, Visited);
+    ResetMaze(Maze, Visited, Solution);
 
     PickupRandomCell(Maze, &currentCellLine, &currentCellColumn);
     unvisitedCells = N * N;
@@ -363,13 +323,13 @@ void AldousBroderMaze(bool Maze[N][N]){
         }
 
         if (!Visited[neighCellLine][neighCellColumn]){
-            CloseCell(Maze, currentCellLine, currentCellColumn, open, guess);
+            CloseCell(Maze, neighCellLine, neighCellColumn, open, guess);
             Visited[neighCellLine][neighCellColumn] = true;
             unvisitedCells--;
         }
 
-//        ShowMazeDetails(Maze, Visited,currentCellLine, currentCellColumn, true);
-//        printf("\ncont: %d\nunvisited cells: %d\nneighCellLine:   %2d ::: \tcurrentCellLine:   %2d \nneighCellColumn: %2d ::: \tcurrentCellColumn: %2d\n\n", ++cont, unvisitedCells, neighCellLine, currentCellLine, neighCellColumn, currentCellColumn);
+        ShowMazeDetails(Maze, Visited,currentCellLine, currentCellColumn, true);
+        printf("\ncont: %d\nunvisited cells: %d\nneighCellLine:   %2d ::: \tcurrentCellLine:   %2d \nneighCellColumn: %2d ::: \tcurrentCellColumn: %2d\n\n", ++cont, unvisitedCells, neighCellLine, currentCellLine, neighCellColumn, currentCellColumn);
 
         currentCellLine   = neighCellLine;
         currentCellColumn = neighCellColumn;
@@ -415,7 +375,7 @@ bool MazeSolving(bool Maze[N][N], bool Solution[N][N], int LineSource, int Colum
     // tries north, if possible
     if (LineSource > 0){
         // is the top cell open?
-        if (Maze[LineSource+1][ColumnSource] == false){
+        if (Maze[LineSource-1][ColumnSource] == false){
             if (MazeSolving(Maze, Solution, LineSource - 1, ColumnSource, LineDest, ColumnDest)) return true;
         }
     }
@@ -423,7 +383,7 @@ bool MazeSolving(bool Maze[N][N], bool Solution[N][N], int LineSource, int Colum
     // tries south, if possible
     if (LineSource < (N - 1)){
         // is the bottom cell open?
-        if (Maze[LineSource-1][ColumnSource] == false){
+        if (Maze[LineSource+1][ColumnSource] == false){
             if (MazeSolving(Maze, Solution, LineSource + 1, ColumnSource, LineDest, ColumnDest)) return true;
         }
     }
@@ -463,32 +423,18 @@ int main(){
 
     srand(time(NULL));
 
-    int i, j;
-    for (i = 0; i < N; i++)
-        for (j = 0; j < N; j++)
-            Solution[i][j] = false;
+    AldousBroderMaze(Maze, Solution);
+    ShowMaze(Maze);
 
-    AldousBroderMaze(Maze);
-//
-//    ShowMazeValues(Maze);
-//    ShowMaze(Maze);
-//
     bool Solved = MazeSolving(Maze, Solution, 0, 0, N - 1, N - 1);
     if (Solved){
         ShowMaze(Maze); printf("\n");
         ShowMazeSolution(Maze, Solution, false);
     }else{
+    	ShowMaze(Maze);
         printf("\n::: There is no solution for tis maze! \n");
     }
 
-
-    i = 0, j = 0;
-    for (i = 0; i < N; i++){
-        for (j = 0; j < N; j++) {
-            printf("%d", Maze[i][j]);
-        }
-        printf("\n");
-    }
 
     return (0);
 }
